@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks History - Scrapper AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/style.css' %}">
+    <style>
+        .history-page-content {
+            padding: 3rem 4rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .history-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.25rem;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.25rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .history-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-color: var(--primary);
+        }
+
+        .history-index {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #eff6ff;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.9rem;
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-query {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+
+        .history-meta {
+            display: flex;
+            gap: 1.25rem;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .history-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .results-count-badge {
+            padding: 0.4rem 0.85rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .results-count-badge.zero {
+            background: #fef2f2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+
+        .replay-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #f8fafc;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .history-card:hover .replay-icon {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .history-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .btn-clear-all {
+            background: #fff;
+            border: 1.5px solid #fecaca;
+            color: #ef4444;
+            padding: 0.6rem 1.25rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-clear-all:hover {
+            background: #fef2f2;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Dashboard Tabs -->
+    <nav class="dashboard-nav">
+        <div class="nav-tabs">
+            <a href="/" class="nav-tab">Input</a>
+            <a href="/tasks/" class="nav-tab active">Tasks</a>
+            <a href="/pricing/" class="nav-tab">Pricing</a>
+            <a href="/about/" class="nav-tab">About</a>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="quota-pill" style="margin-right: 1.5rem; background: #f1f5f9; padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.9rem; font-weight: 700; color: #475569;">
+                <i class="fa-solid fa-bolt" style="color: var(--primary);"></i>
+                <span>{{ searches_used }} / {{ max_searches }}</span>
+            </div>
+            {% if is_premium %}
+            <div class="navbar-premium-badge"><i class="fa-solid fa-crown"></i>&nbsp;Premium Member</div>
+            {% else %}
+            <a href="#" class="navbar-premium-btn" onclick="window.location.href='/pricing/'">
+                <i class="fa-solid fa-crown"></i> Upgrade to Premium
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="history-page-content">
+        <div class="history-header">
+            <div>
+                <h1>Search History</h1>
+                <p style="color: #64748b; font-weight: 500;">Previous scrapers run in this session</p>
+            </div>
+            {% if history %}
+            <button class="btn-clear-all" onclick="clearHistory()">
+                <i class="fa-solid fa-trash-can"></i> Clear All
+            </button>
+            {% endif %}
+        </div>
+
+        {% if history %}
+        <div class="history-list">
+            {% for item in history %}
+            <a class="history-card" 
+               href="{% if item.task_id %}/tasks/{{ item.task_id }}{% else %}/?q={{ item.query|urlencode }}&cities={{ item.city|urlencode }}{% endif %}"
+            >
+                <div class="history-index">{{ forloop.counter }}</div>
+                <div class="history-info">
+                    <div class="history-query">{{ item.query }}</div>
+                    <div class="history-meta">
+                        <span><i class="fa-solid fa-location-dot"></i> {{ item.location|truncatechars:60 }}</span>
+                        <span><i class="fa-solid fa-clock"></i> {{ item.timestamp }}</span>
+                    </div>
+                </div>
+                {% if item.result_count > 0 %}
+                <div class="results-count-badge">{{ item.result_count }} leads</div>
+                {% else %}
+                <div class="results-count-badge zero">0 leads</div>
+                {% endif %}
+                <div class="replay-icon">
+                    <i class="fa-solid fa-arrow-rotate-right"></i>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 5rem 0; background: #fff; border-radius: 1.5rem; border: 1px solid #e2e8f0;">
+            <div style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1.5rem;">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+            <h2 style="font-weight: 800; color: #0f172a; margin-bottom: 0.5rem;">No Searches Found</h2>
+            <p style="color: #64748b;">Start by running your first scraper in the Input tab.</p>
+            <a href="/" class="scraper-type-btn" style="text-decoration: none; display: inline-block; margin-top: 2rem;">Go to Input</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function clearHistory() {
+            if (!confirm('Are you sure you want to clear your search history?')) return;
+            fetch('/tasks/clear/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            }).then(response => {
+                if (response.ok) window.location.reload();
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,846 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Plans — Scrapper AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/style.css' %}">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #6366f1;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            /* Cards now use white theme */
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 40%);
+        }
+
+        /* --- Animations --- */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+
+        @keyframes slide-in {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* --- Navbar Overrides for Pricing Page --- */
+        .dashboard-nav {
+            background: #fff;
+            border-bottom: 1px solid rgba(243, 239, 239, 0.05);
+        }
+
+        /* --- Hero --- */
+        .hero {
+            padding: 8rem 5% 3rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-badge {
+            background: #eff6ff;
+            padding: 0.5rem 1.25rem;
+            border-radius: 2rem;
+            border: 1px solid #bfdbfe;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+            animation: slide-in 0.5s ease;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+            color: var(--text-main);
+            animation: slide-in 0.6s ease;
+        }
+
+        .hero h1 span {
+            color: var(--primary);
+        }
+
+        .hero p {
+            color: var(--text-sub);
+            font-size: 1.1rem;
+            max-width: 600px;
+            line-height: 1.6;
+            animation: slide-in 0.7s ease;
+        }
+
+        /* --- Pricing Grid --- */
+        .pricing-section {
+            padding: 1rem 5% 8rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .price-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 1.5rem;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .price-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .price-card.featured {
+            border: 2px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.1);
+        }
+
+        .price-card.featured::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 0.3rem 1.25rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-header p {
+            color: var(--text-sub);
+            font-size: 0.96rem;
+        }
+
+        .price-wrap {
+            margin: 2rem 0;
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+        }
+
+        .currency {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .amount {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .period {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+        }
+
+        .features-list {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .feature-item i {
+            color: var(--success);
+            font-size: 1rem;
+        }
+
+        .feature-item.limit {
+            color: var(--text-sub);
+            opacity: 0.6;
+        }
+
+        .feature-item.limit i {
+            color: #ef4444;
+        }
+
+        .select-plan-btn {
+            margin-top: 2.5rem;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .select-plan-btn:hover {
+            background: #f8fafc;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .featured .select-plan-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .featured .select-plan-btn:hover {
+            background: var(--primary-dark);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .elite-btn {
+            background: #0f172a !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        .elite-btn:hover {
+            background: #1e293b !important;
+        }
+
+        /* --- Payment Modal --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .payment-modal {
+            background: white;
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 480px;
+            padding: 2.5rem;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: #f1f5f9;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: var(--text-sub);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .close-modal:hover {
+            background: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-header p {
+            color: var(--text-sub);
+        }
+
+        .order-info {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .order-details .plan-name {
+            font-weight: 800;
+            font-size: 1.1rem;
+            display: block;
+        }
+
+        .order-details .plan-limit {
+            color: var(--text-sub);
+            font-size: 0.85rem;
+        }
+
+        .order-price {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .pay-methods {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .method-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            padding: 1rem;
+            border-radius: 1rem;
+            color: var(--text-sub);
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .method-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .payment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-sub);
+        }
+
+        .form-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 1rem 1.25rem;
+            border-radius: 1rem;
+            color: white;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .final-pay-btn {
+            margin-top: 1rem;
+            background: white;
+            color: black;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border: none;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .final-pay-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 30px rgba(255, 255, 255, 0.2);
+        }
+
+        .final-pay-btn i {
+            font-size: 1rem;
+        }
+
+        .final-pay-btn.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* --- Success Screen --- */
+        .success-overlay {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .success-overlay.active {
+            display: flex;
+        }
+
+        .success-check {
+            width: 80px;
+            height: 80px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        .active-plan-banner {
+            background: linear-gradient(to right, rgba(16, 185, 129, 0.1), transparent);
+            border-left: 4px solid var(--success);
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: slide-in 0.8s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-tabs">
+            <a href="/" class="nav-tab">Input</a>
+            <a href="/tasks/" class="nav-tab">Tasks</a>
+            <a href="/pricing/" class="nav-tab active">Pricing</a>
+            <a href="/about/" class="nav-tab">About</a>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="quota-pill" style="margin-right: 1.5rem; background: #f1f5f9; padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.9rem; font-weight: 700; color: #475569;">
+                <i class="fa-solid fa-bolt" style="color: #6366f1;"></i>
+                <span>{{ searches_used }} / {{ max_searches }}</span>
+            </div>
+            {% if is_premium %}
+            <div class="navbar-premium-badge"><i class="fa-solid fa-crown"></i>&nbsp;Premium Member</div>
+            {% else %}
+            <a href="/pricing/" class="navbar-premium-btn">
+                <i class="fa-solid fa-crown"></i> Upgrade to Premium
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-badge">Membership Plans</div>
+        <h1>Power up your <span>lead generation</span></h1>
+        <p>Unlock the full potential of high-speed parallel scraping. Choose a plan that fuels your growth.</p>
+
+        {% if is_premium %}
+        <div class="active-plan-banner">
+            <i class="fa-solid fa-circle-check" style="color: var(--success); font-size: 1.5rem;"></i>
+            <div>
+                <span style="font-weight: 800; display: block;">{{ plan_name }} Plan Active</span>
+                <span style="color: var(--text-sub); font-size: 0.85rem;">You have premium access to all features.</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <section class="pricing-section">
+        <div class="pricing-grid">
+            
+            <!-- Starter -->
+            <div class="price-card">
+                <div class="card-header">
+                    <h2>Starter</h2>
+                    <p>Good for basic leads</p>
+                </div>
+                <div class="price-wrap">
+                    <span class="currency">₹</span>
+                    <span class="amount">99</span>
+                </div>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>100 Deep Searches</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Phone & Location Data</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Interactive Dashboard</span>
+                    </div>
+                    <div class="feature-item limit">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        <span>Priority Speed</span>
+                    </div>
+                    <div class="feature-item limit">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        <span>Bulk CSV Export</span>
+                    </div>
+                </div>
+                <button class="select-plan-btn" onclick="openPayment('starter', 'Starter', 99, 100)">
+                    Start Growing
+                </button>
+            </div>
+
+            <!-- Pro -->
+            <div class="price-card featured">
+                <div class="card-header">
+                    <h2>Professional</h2>
+                    <p>Our most popular choice</p>
+                </div>
+                <div class="price-wrap">
+                    <span class="currency">₹</span>
+                    <span class="amount">299</span>
+                </div>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>500 Deep Searches</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Priority Parallel Speed</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Verified Website Links</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Advanced Map Filters</span>
+                    </div>
+                    <div class="feature-item limit">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        <span>Bulk CSV Export</span>
+                    </div>
+                </div>
+                <button class="select-plan-btn" onclick="openPayment('pro', 'Professional', 299, 500)">
+                    Upgrade to Pro
+                </button>
+            </div>
+
+            <!-- Elite -->
+            <div class="price-card">
+                <div class="card-header">
+                    <h2>Enterprise</h2>
+                    <p>For high-volume agencies</p>
+                </div>
+                <div class="price-wrap">
+                    <span class="currency">₹</span>
+                    <span class="amount">599</span>
+                </div>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>1,000 Deep Searches</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Max Parallel Speed (4x)</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Unlimited CSV Exports</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Phone Support</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>API Access (Beta)</span>
+                    </div>
+                </div>
+                <button class="select-plan-btn elite-btn" onclick="openPayment('elite', 'Enterprise', 599, 1000)">
+                    Go Enterprise
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Payment Overlay -->
+    <div class="modal-overlay" id="modalOverlay">
+        
+        <div class="payment-modal" id="paymentContent">
+            <button class="close-modal" onclick="closePayment()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-header">
+                <h3>Finalize Order</h3>
+                <p>Secure one-time payment</p>
+            </div>
+
+            <div class="order-info">
+                <div class="order-details">
+                    <span class="plan-name" id="modalPlanName">Professional</span>
+                    <span class="plan-limit" id="modalPlanLimit">500 searches</span>
+                </div>
+                <div class="order-price" id="modalPrice">₹299</div>
+            </div>
+
+            <div class="pay-methods">
+                <button class="method-btn active" id="btn-upi" onclick="setMethod('upi')">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                    UPI
+                </button>
+                <button class="method-btn" id="btn-card" onclick="setMethod('card')">
+                    <i class="fa-solid fa-credit-card"></i>
+                    Card
+                </button>
+                <button class="method-btn" id="btn-crypto" onclick="setMethod('crypto')">
+                    <i class="fa-solid fa-wallet"></i>
+                    Wallet
+                </button>
+            </div>
+
+            <div class="payment-form">
+                <div class="input-group" id="upiGroup">
+                    <label>Enter UPI ID</label>
+                    <input type="text" class="form-input" id="upiId" placeholder="username@upi">
+                </div>
+
+                <div class="input-group" id="cardGroup" style="display: none;">
+                    <label>Card Number</label>
+                    <input type="text" class="form-input" placeholder="•••• •••• •••• ••••">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;">
+                        <input type="text" class="form-input" placeholder="MM/YY">
+                        <input type="text" class="form-input" placeholder="CVC">
+                    </div>
+                </div>
+
+                <button class="final-pay-btn" id="payBtn" onclick="processPayment()">
+                    <i class="fa-solid fa-lock"></i>
+                    Pay Now
+                </button>
+            </div>
+            
+            <p style="text-align: center; font-size: 0.7rem; color: var(--text-sub); margin-top: 1.5rem;">
+                <i class="fa-solid fa-shield-halved"></i> Secured by 256-bit SSL encryption
+            </p>
+        </div>
+
+        <!-- Success Screen -->
+        <div class="success-overlay" id="successContent">
+            <div class="success-check">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem;">Elite Status Unlocked!</h2>
+            <p style="color: var(--text-sub); margin-bottom: 2.5rem;">Your account has been upgraded successfully.</p>
+            <button class="select-plan-btn" style="background: white; color: black; width: auto; padding: 1.25rem 3rem;" onclick="window.location.href='/'">
+                Launch Dashboard
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        let currentPlanKey = 'pro';
+        const RAZORPAY_KEY = "{{ razorpay_key_id }}";
+
+        function openPayment(key, name, price, limit) {
+            currentPlanKey = key;
+            
+            // Show loading state if needed, but we'll call create-order first
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            btn.disabled = true;
+
+            fetch('/create-order/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ plan: key })
+            })
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.message || 'Failed to create order');
+                }
+                return data;
+            })
+            .then(data => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+
+                if (data.order_id) {
+                    const options = {
+                        "key": data.key,
+                        "amount": data.amount,
+                        "currency": data.currency,
+                        "name": "Scrapper AI",
+                        "description": "Premium Subscription - " + data.plan_name,
+                        "order_id": data.order_id,
+                        "handler": function (response) {
+                            verifyPayment(response, key);
+                        },
+                        "prefill": {
+                            "name": "",
+                            "email": ""
+                        },
+                        "theme": {
+                            "color": "#6366f1"
+                        }
+                    };
+                    const rzp = new Razorpay(options);
+                    rzp.on('payment.failed', function (response) {
+                        alert("Payment Failed: " + response.error.description);
+                    });
+                    rzp.open();
+                } else {
+                    alert("Error creating order. Please try again.");
+                }
+            })
+            .catch(err => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                console.error(err);
+                alert("Error: " + err.message);
+            });
+        }
+
+        function verifyPayment(razorpayResponse, planKey) {
+            // Show success screen or redirect
+            document.getElementById('modalOverlay').classList.add('active');
+            document.getElementById('paymentContent').style.display = 'none';
+            document.getElementById('successContent').style.display = 'flex';
+            
+            // Call verify-payment on backend
+            fetch('/verify-payment/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    razorpay_order_id: razorpayResponse.razorpay_order_id,
+                    razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+                    razorpay_signature: razorpayResponse.razorpay_signature,
+                    plan_key: planKey
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    console.log("Payment verified successfully");
+                } else {
+                    alert("Payment verification failed! Please contact support.");
+                }
+            });
+        }
+
+        function closePayment() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+    </script>
+</body>
+</html>

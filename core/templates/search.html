@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Scrapper AI</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'core/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+</head>
+
+<body>
+    <!-- Top Dashboard Tabs -->
+    <nav class="dashboard-nav">
+        <div class="nav-tabs">
+            <a href="/" class="nav-tab active">Input</a>
+            <a href="/tasks/" class="nav-tab">Tasks</a>
+            <a href="/pricing/" class="nav-tab">Pricing</a>
+            <a href="/about/" class="nav-tab">About</a>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="quota-pill" style="margin-right: 1.5rem; background: #f1f5f9; padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.9rem; font-weight: 700; color: #475569;">
+                <i class="fa-solid fa-bolt" style="color: var(--primary);"></i>
+                <span>{{ searches_used }} / {{ max_searches }}</span>
+            </div>
+            {% if is_premium %}
+            <div class="navbar-premium-badge"><i class="fa-solid fa-crown"></i>&nbsp;Premium Member</div>
+            {% else %}
+            <a href="/pricing/" class="navbar-premium-btn">
+                <i class="fa-solid fa-crown"></i> Upgrade to Premium
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="input-section-bg">
+        <div class="dashboard-content">
+            
+            {% if not results %}
+            <!-- INPUT TAB VIEW: The focused form centered on the page -->
+            <header class="scraper-header">
+                <form method="GET" action="" id="searchForm" 
+                    data-limited="{{ limit_reached|yesno:'true,false' }}"
+                    onsubmit="return handleFormSubmit(this)">
+                    
+                    <div class="header-top">
+                        <span class="choose-scraper">Scraper</span>
+                        <button type="button" class="scraper-type-btn">Maps Scraper</button>
+                    </div>
+
+                    <div class="form-section form-full">
+                        <label class="section-label">What would you like to extract?</label>
+                        <div class="tag-input-container" onclick="document.getElementById('q-tag-input').focus()">
+                            <div class="tags-list" id="q-tags">
+                                {% for tag in query_list %}
+                                <div class="tag" data-value="{{ tag }}">
+                                    {{ tag }} <i class="fa-solid fa-xmark remove-tag" onclick="removeTag(this)"></i>
+                                    <input type="hidden" name="q" value="{{ tag }}">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <input type="text" id="q-tag-input" class="tag-hidden-input" placeholder="e.g. Aikido Club, IT company, Gym..." data-field="q">
+                        </div>
+                        <a href="#" class="bulk-edit-link">Bulk Edit</a>
+                    </div>
+
+                    <!-- <div class="form-section form-full">
+                        <label class="section-label">How do you want to search?</label>
+                        <div class="search-mode-toggle">
+                            <button type="button" class="toggle-btn active" id="mode-city">By City</button>
+                            <button type="button" class="toggle-btn" id="mode-links">By Search/Place Links</button>
+                        </div>
+                    </div> -->
+
+                    <div class="form-grid">
+                        <div class="form-section">
+                            <label class="section-label">Countries</label>
+                            <div class="tag-input-container" onclick="document.getElementById('country-tag-input').focus()">
+                                <div class="tags-list" id="country-tags">
+                                    {% for tag in countries_list %}
+                                    <div class="tag" data-value="{{ tag }}">
+                                        {{ tag }} <i class="fa-solid fa-xmark remove-tag" onclick="removeTag(this)"></i>
+                                        <input type="hidden" name="countries" value="{{ tag }}">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <input type="text" id="country-tag-input" class="tag-hidden-input" placeholder="e.g. India, USA..." data-field="countries">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <label class="section-label">States</label>
+                            <div class="tag-input-container" onclick="document.getElementById('state-tag-input').focus()">
+                                <div class="tags-list" id="state-tags">
+                                    {% for tag in states_list %}
+                                    <div class="tag" data-value="{{ tag }}">
+                                        {{ tag }} <i class="fa-solid fa-xmark remove-tag" onclick="removeTag(this)"></i>
+                                        <input type="hidden" name="states" value="{{ tag }}">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <input type="text" id="state-tag-input" class="tag-hidden-input" placeholder="e.g. Rajasthan, California..." data-field="states">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <label class="section-label">Cities</label>
+                            <div class="tag-input-container" onclick="document.getElementById('city-tag-input').focus()">
+                                <div class="tags-list" id="city-tags">
+                                    {% for tag in cities_list %}
+                                    <div class="tag" data-value="{{ tag }}">
+                                        {{ tag }} <i class="fa-solid fa-xmark remove-tag" onclick="removeTag(this)"></i>
+                                        <input type="hidden" name="cities" value="{{ tag }}">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <input type="text" id="city-tag-input" class="tag-hidden-input" placeholder="e.g. Ajmer, Jaipur, Mumbai..." data-field="cities">
+                            </div>
+                            <a href="#" class="bulk-edit-link">Bulk Edit</a>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <button type="submit" class="search-btn-v2">
+                            <i class="fa-solid fa-play"></i> Run Scraper
+                        </button>
+                    </div>
+                </form>
+            </header>
+            {% endif %}
+
+            <!-- RESULTS TAB VIEW: Professional Leads Management UI -->
+            {% if results or error_message %}
+            <div class="results-header-info">
+                <span>{{ results|length }} All Leads Found</span>
+                
+                <div class="filter-controls" style="display: flex; gap: 0.5rem; margin-left: auto; align-items: center;">
+                    <select id="sortField" class="filter-select" onchange="applyFilters()">
+                        <option value="default">Sort: Default</option>
+                        <option value="reviews">Sort: Most Reviews</option>
+                        <option value="rating">Sort: Top Rated</option>
+                        <option value="name">Sort: Name (A-Z)</option>
+                        <option value="city">Sort: City (A-Z)</option>
+                    </select>
+
+                    <select id="filterCity" class="filter-select" onchange="applyFilters()">
+                        <option value="all">All Cities</option>
+                        <!-- Options populated by JS -->
+                    </select>
+
+                    <select id="filterCategory" class="filter-select" onchange="applyFilters()">
+                        <option value="all">All Types</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+
+                <button class="scraper-type-btn" style="background:#0f172a; margin-left: 1rem;" onclick="window.location.href='/'">
+                    <i class="fa-solid fa-plus"></i> New Search
+                </button>
+                <button class="scraper-type-btn" style="background:#16a34a; margin-left: 0.5rem;" onclick="openExportModal()">
+                    <i class="fa-solid fa-file-csv"></i> Export CSV
+                </button>
+            </div>
+
+            {% if error_message %}
+            <div class="alert-banner alert-error" style="margin-bottom: 25px;">
+                <i class="fa-solid fa-circle-exclamation"></i> {{ error_message }}
+            </div>
+            {% endif %}
+
+            <div class="results-grid-layout">
+                <div class="leads-list">
+                    {% for p in results %}
+                    <div class="place-card" id="place-{{ forloop.index0 }}" onclick="focusOnMap('{{ forloop.index0 }}', '{{ p.lat }}', '{{ p.lng }}')">
+                        <div class="place-card-header">
+                            <h3 class="place-name">{{ p.name }}</h3>
+                            <div class="place-rating">
+                                <i class="fa-solid fa-star" style="color:#fbbf24;"></i> {{ p.rating }}
+                                <span style="color: #64748b; font-size: 0.85rem; font-weight: 400; margin-left: 4px;">({{ p.reviews }} reviews)</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            {% if p.website == 'n/a' %}
+                            <span class="place-badge lead-verified">No Website (Lead)</span>
+                            {% else %}
+                            <span class="place-badge" style="background:#eff6ff; color:#2563eb; border: 1px solid #bfdbfe;">Verified Website</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="place-meta">
+                            <div class="meta-item">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <span>{{ p.address }}</span>
+                            </div>
+                            {% if p.phone != 'n/a' %}
+                            <div class="meta-item">
+                                <i class="fa-solid fa-phone"></i>
+                                <span>{{ p.phone }}</span>
+                            </div>
+                            {% endif %}
+                            {% if p.website != 'n/a' %}
+                            <div class="meta-item">
+                                <i class="fa-solid fa-globe"></i>
+                                <a href="{{ p.website }}" target="_blank" style="color:var(--primary); text-decoration:none;" onclick="event.stopPropagation()">{{ p.website|truncatechars:45 }}</a>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ p.lat }},{{ p.lng }}" target="_blank" class="directions-call-to-action" onclick="event.stopPropagation()">
+                            <i class="fa-solid fa-diamond-turn-right"></i> View Location Details
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="map-wrapper-fixed">
+                    <div id="map" style="height: 100%;"></div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- PREVENT OVERLAY LOADER -->
+    <div id="loader" class="loader-overlay" style="display: none;">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <h3>4x Faster Deep-Parallel Scraping...</h3>
+            <p>Searching 3x3 grids in parallel to find every hidden lead.<br>This usually takes 1-2 minutes.</p>
+        </div>
+    </div>
+
+    <!-- PREMIUM MODAL -->
+    <div id="premiumModal" class="modal-backdrop">
+        <div class="premium-card">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <div class="crown-icon">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+            <h2>Unlock Unlimited Searches</h2>
+            <p>You've reached your free daily limit. Upgrade to Premium to run unlimited scraper tasks and export larger datasets.</p>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <i class="fa-solid fa-check"></i> <span>500 Searches / Month</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fa-solid fa-check"></i> <span>Export to CSV/Excel</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fa-solid fa-check"></i> <span>Priority Multi-Grid Speed</span>
+                </div>
+            </div>
+            <button class="upgrade-btn" id="upgradeBtn" onclick="activatePremium()">
+                <i class="fa-solid fa-crown"></i> Get Premium — $0 (Demo)
+            </button>
+
+
+    <p style="font-size: 0.75rem; margin-top: 1rem; color: #94a3b8;">* This is a demonstration button</p>
+
+        </div>
+    </div>
+
+    {% include 'components/export_modal.html' %}
+
+    {{ results|json_script:"results-data" }}
+
+    <div style="display:none;">{% csrf_token %}</div>
+    <script>
+        var CSRF_TOKEN = '{{ csrf_token }}';
+    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="{% static 'core/script.js' %}"></script>
+    <script id="limit-data" type="application/json">{{ limit_reached|yesno:"true,false" }}</script>
+    <script>
+        var IS_LIMITED = JSON.parse(document.getElementById('limit-data').textContent);
+        
+        // --- Multi-Field Tag Input Logic ---
+        const tagInputs = document.querySelectorAll('.tag-hidden-input');
+        
+        tagInputs.forEach(input => {
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const val = this.value.trim();
+                    const field = this.dataset.field;
+                    if (val) {
+                        addTag(val, field);
+                        this.value = '';
+                    }
+                }
+            });
+        });
+
+        function addTag(text, field) {
+            // Map the field name to the correct HTML ID
+            let listId;
+            if (field === 'q') listId = 'q-tags';
+            else if (field === 'countries') listId = 'country-tags';
+            else if (field === 'states') listId = 'state-tags';
+            else if (field === 'cities') listId = 'city-tags';
+            
+            const tagsList = document.getElementById(listId);
+            if (!tagsList) return;
+
+            const existing = Array.from(tagsList.querySelectorAll('.tag')).map(t => t.dataset.value);
+            if (existing.includes(text)) return;
+
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.dataset.value = text;
+            tag.innerHTML = `
+                ${text} <i class="fa-solid fa-xmark remove-tag" onclick="removeTag(this)"></i>
+                <input type="hidden" name="${field}" value="${text}">
+            `;
+            tagsList.appendChild(tag);
+        }
+
+        function removeTag(el) { el.closest('.tag').remove(); }
+
+        // --- Handle Form Submit (Auto-tagging leftover text) ---
+        function handleFormSubmit(form) {
+            if (form.dataset.limited === 'true') {
+                showPremiumModal();
+                return false;
+            }
+
+            // Convert any remaining text in inputs to tags
+            tagInputs.forEach(input => {
+                const val = input.value.trim();
+                const field = input.dataset.field;
+                if (val) addTag(val, field);
+            });
+
+            // Check if we have at least 'q' and one location (handled by backend but nice for UI)
+            showLoading();
+            return true;
+        }
+
+        // --- Premium Redirection ---
+        function showPremiumModal() {
+            window.location.href = '/pricing/';
+        }
+
+        // --- Toggle Logic ---
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const parent = this.closest('.search-mode-toggle');
+                parent.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        window.addEventListener('DOMContentLoaded', function () {
+            if (IS_LIMITED) showPremiumModal();
+        });
+    </script>
+</body>
+</html>

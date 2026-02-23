@@ -1,0 +1,61 @@
+<!-- EXPORT CSV MODAL COMPONENT -->
+<div id="exportModal" class="modal-backdrop">
+    <div class="premium-card" style="max-width: 450px;">
+        <button class="close-modal" onclick="closeExportModal()">&times;</button>
+        <div style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; text-align: center;">
+            <i class="fa-solid fa-file-csv"></i>
+        </div>
+        <h2 style="text-align: center;">Customize Your Export</h2>
+        <p style="text-align: center; margin-bottom: 1.5rem;">Select the columns you want to include in your CSV lead list.</p>
+        
+        <form id="exportForm" onsubmit="handleExport(event)">
+            <input type="hidden" name="task_id" id="exportTaskId" value="{% if task_id %}{{ task_id }}{% elif task_meta %}{{ task_meta.task_id }}{% endif %}">
+            <div class="field-selection-grid">
+                <label class="field-checkbox">
+                    <input type="checkbox" name="fields" value="name" checked>
+                    <span>Business Name</span>
+                </label>
+                <label class="field-checkbox">
+                    <input type="checkbox" name="fields" value="address" checked>
+                    <span>Address</span>
+                </label>
+                <label class="field-checkbox">
+                    <input type="checkbox" name="fields" value="phone" checked>
+                    <span>Phone Number</span>
+                </label>
+                <label class="field-checkbox">
+                    <input type="checkbox" name="fields" value="website" checked>
+                    <span>Website URL</span>
+                </label>
+                <label class="field-checkbox">
+                    <input type="checkbox" name="fields" value="rating" checked>
+                    <span>Rating</span>
+                </label>
+                <label class="field-checkbox">
+                    <input type="checkbox" name="fields" value="reviews" checked>
+                    <span>Reviews Count</span>
+                </label>
+                <label class="field-checkbox">
+                    <input type="checkbox" name="fields" value="lat">
+                    <span>Latitude</span>
+                </label>
+                <label class="field-checkbox">
+                    <input type="checkbox" name="fields" value="lng">
+                    <span>Longitude</span>
+                </label>
+                <label class="field-checkbox">
+                    <input type="checkbox" name="fields" value="city_name">
+                    <span>City Metadata</span>
+                </label>
+                <label class="field-checkbox">
+                    <input type="checkbox" name="fields" value="category">
+                    <span>Search Type</span>
+                </label>
+            </div>
+            
+            <button type="submit" class="upgrade-btn" style="margin-top: 1.5rem; background: #16a34a; width: 100%;">
+                <i class="fa-solid fa-download"></i> Download Filtered CSV
+            </button>
+        </form>
+    </div>
+</div>

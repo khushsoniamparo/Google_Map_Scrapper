@@ -1,0 +1,209 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us — Scrapper AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/style.css' %}">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 40%);
+        }
+
+        .about-container {
+            max-width: 900px;
+            margin: 6rem auto 10rem;
+            padding: 0 5%;
+        }
+
+        .about-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .about-header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            letter-spacing: -1px;
+        }
+
+        .about-header h1 span {
+            color: var(--primary);
+        }
+
+        .about-header p {
+            font-size: 1.25rem;
+            color: var(--text-sub);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .about-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-bottom: 3rem;
+        }
+
+        .about-card h2 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .about-card h2 i {
+            color: var(--primary);
+        }
+
+        .about-card p {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: var(--text-sub);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            transition: all 0.2s;
+        }
+
+        .feature-box:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        }
+
+        .feature-box i {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-box h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-box p {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        /* --- Navbar Overrides --- */
+        .dashboard-nav {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-tabs">
+            <a href="/" class="nav-tab">Input</a>
+            <a href="/tasks/" class="nav-tab">Tasks</a>
+            <a href="/pricing/" class="nav-tab">Pricing</a>
+            <a href="/about/" class="nav-tab active">About</a>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="quota-pill" style="margin-right: 1.5rem; background: #f1f5f9; padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.9rem; font-weight: 700; color: #475569;">
+                <i class="fa-solid fa-bolt" style="color: var(--primary);"></i>
+                <span>{{ searches_used }} / {{ max_searches }}</span>
+            </div>
+            {% if is_premium %}
+            <div class="navbar-premium-badge"><i class="fa-solid fa-crown"></i>&nbsp;Premium Member</div>
+            {% else %}
+            <a href="/pricing/" class="navbar-premium-btn">
+                <i class="fa-solid fa-crown"></i> Upgrade to Premium
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="about-container">
+        <header class="about-header">
+            <div style="background: #eff6ff; color: var(--primary); padding: 0.5rem 1.25rem; border-radius: 2rem; font-weight: 700; font-size: 0.8rem; display: inline-block; margin-bottom: 1.5rem; border: 1px solid #bfdbfe;">OUR MISSION</div>
+            <h1>The Power of <span>Data Extraction</span></h1>
+            <p>We built Scrapper AI to help businesses and developers find high-quality leads from Google Maps without the technical headache.</p>
+        </header>
+
+        <div class="about-card">
+            <h2><i class="fa-solid fa-rocket"></i> Why Scrapper AI?</h2>
+            <p>Finding local business data manually is slow, painful, and error-prone. Scrapper AI automates the entire process, using intelligent multi-grid searching to uncover businesses that standard searches often miss.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-box">
+                    <i class="fa-solid fa-bolt-lightning"></i>
+                    <h3>Parallel Scraping</h3>
+                    <p>Our deep-parallel engine searches 3x3 grids simultaneously to ensure maximum coverage in seconds.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fa-solid fa-file-csv"></i>
+                    <h3>Bulk Exports</h3>
+                    <p>Clean, structured data ready for your CRM. Export everything to CSV or Excel with one click.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <h3>Advanced Filters</h3>
+                    <p>Sort by rating, review count, or verified website status to find only the highest quality leads.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <h3>Verified Links</h3>
+                    <p>We prioritize businesses with verified web presence, saving you time on cold outreach.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-card" style="text-align: center;">
+            <h2><i class="fa-solid fa-heart"></i> Built for Growth</h2>
+            <p>Whether you are a solo freelancer or a growing marketing agency, Scrapper AI scales with your needs. Our premium plans are designed to provide the best value for lead generation professionals.</p>
+            <a href="/pricing/" class="navbar-premium-btn" style="padding: 1rem 2rem !important; font-size: 1rem !important; margin: 1rem auto 0;">Explore Our Plans</a>
+        </div>
+    </div>
+
+</body>
+</html>
