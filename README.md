@@ -111,6 +111,3 @@ scrapper_django/
 *   **Google Blocking**: Playwright uses a real "User-Agent" to mimic a human user to avoid being blocked by Google.
 
 ---
-
-### Created by [Your Name/Khush Soni]
-```
